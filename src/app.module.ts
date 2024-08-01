@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { ConversationsModule } from './conversations/conversations.module';
+
+require('dotenv').config();
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
@@ -17,6 +18,7 @@ import { AuthModule } from './auth/auth.module';
       synchronize: process.env.NODE_ENV !== 'production',
     }),
     AuthModule,
+    ConversationsModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

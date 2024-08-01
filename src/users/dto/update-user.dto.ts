@@ -1,8 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateUserDto } from './create-user.dto';
+import { RegisterDto } from 'src/auth/dto/register.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {
+export class UpdateUserDto extends PartialType(RegisterDto) {
   @ApiProperty({ required: false })
   username?: string;
 

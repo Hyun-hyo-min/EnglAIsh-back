@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { RegisterDto } from 'src/auth/dto/register.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
@@ -9,13 +9,6 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
-  @ApiOperation({ summary: 'Create a new user' })
-  @ApiResponse({ status: 201, description: 'The user has been successfully created.' })
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
 
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Return all users.' })
