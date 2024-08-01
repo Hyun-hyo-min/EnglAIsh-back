@@ -15,24 +15,19 @@ export class ConversationsService {
   ) {}
 
   async createConversation(createConversationDto: CreateConversationDto, user: User): Promise<Conversation> {
-    const { title, language, initialMessage } = createConversationDto;
+    const { title, initialMessage } = createConversationDto;
 
     const conversation = new Conversation();
     conversation.title = title;
-    conversation.language = language;
     conversation.messages = [initialMessage];
     conversation.messageCount = 1;
     conversation.user = user;
 
     // AI 응답 생성
-    const aiResponse = await this.generateAIResponse(initialMessage, language);
+    const aiResponse = await this.openAiService.generateTextResponse(initialMessage);
     conversation.messages.push(aiResponse);
     conversation.messageCount++;
 
     return this.conversationsRepository.save(conversation);
-  }
-
-  private async generateAIResponse(message: string, language: string): Promise<string> {
-    return this.openAiService.generateResponse(message, language);
   }
 }

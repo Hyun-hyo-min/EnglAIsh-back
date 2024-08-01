@@ -7,11 +7,6 @@ export class CreateConversationDto {
   @IsString()
   title: string;
 
-  @ApiProperty({ description: 'The language of the conversation' })
-  @IsNotEmpty()
-  @IsString()
-  language: string;
-
   @ApiProperty({ description: 'The initial message of the conversation' })
   @IsNotEmpty()
   @IsString()

@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ConversationsModule } from './conversations/conversations.module';
+import { FileStorageModule } from './common/file-storage.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 
 require('dotenv').config();
 
@@ -17,8 +20,12 @@ require('dotenv').config();
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: process.env.NODE_ENV !== 'production',
     }),
+    MulterModule.register({
+      storage: memoryStorage(),
+    }),
     AuthModule,
     ConversationsModule,
+    FileStorageModule,
   ],
 })
 export class AppModule { }
