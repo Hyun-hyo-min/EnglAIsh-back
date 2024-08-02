@@ -5,7 +5,6 @@ import { Conversation } from './conversation.entity';
 import { User } from '../users/user.entity';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { OpenAiService } from '../openai/openai.service';
-import { FileStorageService } from '../common/file-storage.service';
 
 @Injectable()
 export class ConversationsService {
@@ -13,7 +12,6 @@ export class ConversationsService {
     @InjectRepository(Conversation)
     private conversationsRepository: Repository<Conversation>,
     private openAiService: OpenAiService,
-    private fileStorageService: FileStorageService
   ) { }
 
   async createConversation(createConversationDto: CreateConversationDto, user: User): Promise<Conversation> {

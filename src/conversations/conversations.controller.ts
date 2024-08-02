@@ -6,6 +6,7 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { User } from 'src/users/user.entity';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { promises as fs } from 'fs';
 
 @ApiTags('conversations')
 @ApiBearerAuth()
@@ -31,10 +32,9 @@ export class ConversationsController {
     @Post('voice-conversation')
     @UseInterceptors(FileInterceptor('audio', {
         storage: diskStorage({
-            destination: './uploads',
+            destination: './temp',
             filename: (req, file, callback) => {
-                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-                callback(null, file.fieldname + '-' + uniqueSuffix + extname(file.originalname));
+                callback(null, extname(file.originalname));
             }
         })
     }))
@@ -43,8 +43,27 @@ export class ConversationsController {
             throw new BadRequestException('No audio file uploaded');
         }
 
-        console.log('Uploaded file:', file);
+        try {
+            const result = await this.conversationsService.processVoiceConversation(file.path, user);
+            await this.deleteFile(file.path);
 
-        return this.conversationsService.processVoiceConversation(file.path, user);
+            return result;
+        }
+
+        catch (error) {
+            await this.deleteFile(file.path);
+            throw error;
+        }
+    }
+
+    private async deleteFile(filePath: string): Promise<void> {
+        try {
+            await fs.unlink(filePath);
+            console.log(`Successfully deleted temporary file: ${filePath}`);
+        }
+
+        catch (error) {
+            console.error(`Error deleting temporary file ${filePath}:`, error);
+        }
     }
 }

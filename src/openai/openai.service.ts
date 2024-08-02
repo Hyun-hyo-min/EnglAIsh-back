@@ -17,12 +17,8 @@ export class OpenAiService {
     async processVoiceConversation(audioFilePath: string): Promise<{ text: string, audioUrl: string }> {
         console.log('Received audio file path:', audioFilePath);
 
-        if (!audioFilePath) {
-            throw new BadRequestException('Audio file path is undefined');
-        }
-
-        if (!fs.existsSync(audioFilePath)) {
-            throw new NotFoundException(`Audio file not found at path: ${audioFilePath}`);
+        if (!audioFilePath || !fs.existsSync(audioFilePath)) {
+            throw new Error(`Audio file not found at path: ${audioFilePath}`);
         }
 
         try {
@@ -30,15 +26,13 @@ export class OpenAiService {
             const responseText = await this.generateTextResponse(transcription);
             const audioBuffer = await this.synthesizeSpeech(responseText);
 
-            // 오디오 파일 저장
-            const filename = `response-${Date.now()}.mp3`;
-            await this.fileStorageService.saveFile(audioBuffer, filename);
-            const audioUrl = this.fileStorageService.getFileUrl(filename);
+            // S3에 오디오 파일 저장
+            const audioUrl = await this.fileStorageService.saveFile(audioBuffer, 'response.mp3');
 
             return { text: responseText, audioUrl };
         } catch (error) {
             console.error('OpenAI API error:', error);
-            throw new InternalServerErrorException('Failed to process voice conversation');
+            throw new Error('Failed to process voice conversation');
         }
     }
 
