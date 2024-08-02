@@ -9,6 +9,5 @@ export class GoogleAuthGuard extends AuthGuard('google') {
     }
 }
 
-
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') { }

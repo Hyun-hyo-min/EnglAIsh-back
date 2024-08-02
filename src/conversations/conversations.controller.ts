@@ -1,4 +1,4 @@
-import { Controller, Post, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, BadRequestException, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ConversationsService } from './conversations.service';
@@ -7,6 +7,7 @@ import { User } from 'src/users/user.entity';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { deleteFile } from 'src/common/utils/deleteFile';
+import { JwtAuthGuard } from 'src/auth/auth.guard';
 
 @ApiBearerAuth()
 @ApiTags('conversations')
@@ -30,6 +31,7 @@ export class ConversationsController {
         },
     })
     @Post('voice-conversation')
+    @UseGuards(JwtAuthGuard)
     @UseInterceptors(FileInterceptor('audio', {
         storage: diskStorage({
             destination: './temp',
@@ -39,6 +41,7 @@ export class ConversationsController {
         })
     }))
     async voiceConversation(@UploadedFile() file: Express.Multer.File, @GetUser() user: User) {
+        console.log(user)
         if (!file) {
             throw new BadRequestException('No audio file uploaded');
         }
