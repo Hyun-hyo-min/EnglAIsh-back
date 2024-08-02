@@ -6,10 +6,10 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { User } from 'src/users/user.entity';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { promises as fs } from 'fs';
+import { deleteFile } from 'src/common/utils/deleteFile';
 
-@ApiTags('conversations')
 @ApiBearerAuth()
+@ApiTags('conversations')
 @Controller('conversations')
 export class ConversationsController {
     constructor(
@@ -45,25 +45,14 @@ export class ConversationsController {
 
         try {
             const result = await this.conversationsService.processVoiceConversation(file.path, user);
-            await this.deleteFile(file.path);
+            await deleteFile(file.path);
 
             return result;
         }
 
         catch (error) {
-            await this.deleteFile(file.path);
+            await deleteFile(file.path);
             throw error;
-        }
-    }
-
-    private async deleteFile(filePath: string): Promise<void> {
-        try {
-            await fs.unlink(filePath);
-            console.log(`Successfully deleted temporary file: ${filePath}`);
-        }
-
-        catch (error) {
-            console.error(`Error deleting temporary file ${filePath}:`, error);
         }
     }
 }

@@ -14,9 +14,7 @@ export class OpenAiService {
         });
     }
 
-    async processVoiceConversation(audioFilePath: string): Promise<{ text: string, audioUrl: string }> {
-        console.log('Received audio file path:', audioFilePath);
-
+    async processVoiceConversation(audioFilePath: string): Promise<{ userText: string, aiText: string, audioUrl: string }> {
         if (!audioFilePath || !fs.existsSync(audioFilePath)) {
             throw new Error(`Audio file not found at path: ${audioFilePath}`);
         }
@@ -29,7 +27,7 @@ export class OpenAiService {
             // S3에 오디오 파일 저장
             const audioUrl = await this.fileStorageService.saveFile(audioBuffer, 'response.mp3');
 
-            return { text: responseText, audioUrl };
+            return { userText: transcription, aiText: responseText, audioUrl };
         } catch (error) {
             console.error('OpenAI API error:', error);
             throw new Error('Failed to process voice conversation');

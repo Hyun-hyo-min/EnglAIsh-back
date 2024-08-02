@@ -7,13 +7,19 @@ export class User {
   id: number;
 
   @Column({ unique: true })
-  username: string;
+  email: string;
+
+  @Column({ nullable: true })
+  password?: string;
 
   @Column()
-  password: string;
+  username: string;
 
-  @Column({ unique: true })
-  email: string;
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  createdDt: Date;
+
+  @Column({ nullable: true })
+  providerId?: string;
 
   @OneToMany(() => Conversation, conversation => conversation.user)
   conversations: Conversation[];

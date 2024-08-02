@@ -12,8 +12,11 @@ export class Conversation {
   @Column()
   title: string;
 
-  @Column('json')
-  messages: string[];
+  @Column()
+  userMessage: string;
+
+  @Column()
+  aiMessage: string;
 
   @Column()
   language: string;

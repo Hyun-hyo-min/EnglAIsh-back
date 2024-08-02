@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Conversation } from './conversation.entity';
 import { User } from '../users/user.entity';
-import { CreateConversationDto } from './dto/create-conversation.dto';
 import { OpenAiService } from '../openai/openai.service';
 
 @Injectable()
@@ -14,46 +13,25 @@ export class ConversationsService {
     private openAiService: OpenAiService,
   ) { }
 
-  async createConversation(createConversationDto: CreateConversationDto, user: User): Promise<Conversation> {
-    const { title, initialMessage } = createConversationDto;
-
-    const conversation = new Conversation();
-    conversation.title = title;
-    conversation.messages = [initialMessage];
-    conversation.messageCount = 1;
-    conversation.user = user;
-
-    try {
-      // AI 응답 생성
-      const aiResponse = await this.openAiService.generateTextResponse(initialMessage);
-      conversation.messages.push(aiResponse);
-      conversation.messageCount++;
-
-      return await this.conversationsRepository.save(conversation);
-    } catch (error) {
-      console.error('Error creating conversation:', error);
-      throw new InternalServerErrorException('Failed to create conversation');
-    }
-  }
-
-  async processVoiceConversation(audioFilePath: string, user: User): Promise<{ text: string; audioUrl: string }> {
+  async processVoiceConversation(audioFilePath: string, user: User): Promise<{ userText: string, aiText: string, audioUrl: string }> {
     if (!audioFilePath) {
       throw new BadRequestException('Audio file path is undefined');
     }
 
     try {
-      const { text, audioUrl } = await this.openAiService.processVoiceConversation(audioFilePath);
+      const { userText, aiText, audioUrl } = await this.openAiService.processVoiceConversation(audioFilePath);
 
       // Conversation 엔티티 생성 및 저장
       const conversation = new Conversation();
       conversation.title = 'Voice Conversation';
-      conversation.messages = [text];
+      conversation.userMessage = userText;
+      conversation.aiMessage = aiText;
       conversation.messageCount = 1;
       conversation.user = user;
 
       await this.conversationsRepository.save(conversation);
 
-      return { text, audioUrl };
+      return { userText, aiText, audioUrl };
     } catch (error) {
       console.error('Error processing voice conversation:', error);
       throw new InternalServerErrorException('Failed to process voice conversation');

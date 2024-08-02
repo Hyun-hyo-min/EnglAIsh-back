@@ -10,14 +10,17 @@ export class RegisterDto {
   username: string;
 
   @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(8)
-  @MaxLength(20)
-  password: string;
-
-  @ApiProperty()
   @IsEmail()
   @IsNotEmpty()
   email: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @MinLength(8)
+  @MaxLength(20)
+  password?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  providerId?: string;
 }

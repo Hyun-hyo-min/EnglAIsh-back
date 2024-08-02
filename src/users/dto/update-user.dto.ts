@@ -11,4 +11,7 @@ export class UpdateUserDto extends PartialType(RegisterDto) {
 
   @ApiProperty({ required: false })
   email?: string;
+
+  @ApiProperty({ required: false })
+  providerId?: string;
 }
