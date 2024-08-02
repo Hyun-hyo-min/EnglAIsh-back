@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { OpenAI } from 'openai';
 import { FileStorageService } from '../common/file-storage.service';
+import { openaiSystemPrompt } from './utils/openai-sysytem.prompt';
 import * as fs from 'fs';
-
 
 @Injectable()
 export class OpenAiService {
@@ -46,9 +46,9 @@ export class OpenAiService {
 
     async generateTextResponse(prompt: string): Promise<string> {
         const completion = await this.openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4o-mini",
             messages: [
-                { role: "system", content: "You are a helpful assistant for English conversation practice. Respond in English." },
+                openaiSystemPrompt,
                 { role: "user", content: prompt }
             ],
             max_tokens: 150
