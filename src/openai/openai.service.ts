@@ -1,35 +1,44 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { OpenAI } from 'openai';
+import { FileStorageService } from '../common/file-storage.service';
 import * as fs from 'fs';
 
-require('dotenv').config();
 
 @Injectable()
 export class OpenAiService {
     private openai: OpenAI;
 
-    constructor() {
+    constructor(private fileStorageService: FileStorageService) {
         this.openai = new OpenAI({
             apiKey: process.env.OPENAI_API_KEY,
         });
     }
 
-    async processVoiceConversation(audioFilePath: string): Promise<{ text: string, audioBuffer: Buffer }> {
+    async processVoiceConversation(audioFilePath: string): Promise<{ text: string, audioUrl: string }> {
+        console.log('Received audio file path:', audioFilePath);
+
         if (!audioFilePath) {
-            throw new Error('Audio file path is undefined');
+            throw new BadRequestException('Audio file path is undefined');
+        }
+
+        if (!fs.existsSync(audioFilePath)) {
+            throw new NotFoundException(`Audio file not found at path: ${audioFilePath}`);
         }
 
         try {
             const transcription = await this.transcribeAudio(audioFilePath);
-
             const responseText = await this.generateTextResponse(transcription);
-
             const audioBuffer = await this.synthesizeSpeech(responseText);
 
-            return { text: responseText, audioBuffer };
+            // 오디오 파일 저장
+            const filename = `response-${Date.now()}.mp3`;
+            await this.fileStorageService.saveFile(audioBuffer, filename);
+            const audioUrl = this.fileStorageService.getFileUrl(filename);
+
+            return { text: responseText, audioUrl };
         } catch (error) {
             console.error('OpenAI API error:', error);
-            throw new Error('Failed to process voice conversation');
+            throw new InternalServerErrorException('Failed to process voice conversation');
         }
     }
 
@@ -43,7 +52,7 @@ export class OpenAiService {
 
     async generateTextResponse(prompt: string): Promise<string> {
         const completion = await this.openai.chat.completions.create({
-            model: "gpt-4o-mini",
+            model: "gpt-3.5-turbo",
             messages: [
                 { role: "system", content: "You are a helpful assistant for English conversation practice. Respond in English." },
                 { role: "user", content: prompt }
@@ -61,7 +70,6 @@ export class OpenAiService {
             input: text,
         });
 
-        const buffer = Buffer.from(await mp3.arrayBuffer());
-        return buffer;
+        return Buffer.from(await mp3.arrayBuffer());
     }
 }
