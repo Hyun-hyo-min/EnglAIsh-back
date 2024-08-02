@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 import { Conversation } from './conversation.entity';
 import { User } from '../users/user.entity';
 import { OpenAiService } from '../openai/openai.service';
@@ -10,6 +10,8 @@ export class ConversationsService {
   constructor(
     @InjectRepository(Conversation)
     private conversationsRepository: Repository<Conversation>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private openAiService: OpenAiService,
   ) { }
 
@@ -18,18 +20,23 @@ export class ConversationsService {
       throw new BadRequestException('Audio file path is undefined');
     }
 
+    if (user.messageCount >= 3) {
+      throw new BadRequestException('Daily message limit exceeded');
+    }
+
     try {
       const { userText, aiText, audioUrl } = await this.openAiService.processVoiceConversation(audioFilePath);
 
-      // Conversation 엔티티 생성 및 저장
       const conversation = new Conversation();
       conversation.title = 'Voice Conversation';
       conversation.userMessage = userText;
       conversation.aiMessage = aiText;
-      conversation.messageCount = 1;
       conversation.user = user;
 
       await this.conversationsRepository.save(conversation);
+
+      user.messageCount++;
+      await this.userRepository.save(user);
 
       return { userText, aiText, audioUrl };
     } catch (error) {
@@ -37,6 +44,7 @@ export class ConversationsService {
       throw new InternalServerErrorException('Failed to process voice conversation');
     }
   }
+
 
   async getConversation(id: string, user: User): Promise<Conversation> {
     const conversation = await this.conversationsRepository.findOne({
@@ -50,4 +58,7 @@ export class ConversationsService {
     return conversation;
   }
 
+  async resetDailyMessageCount() {
+    await this.userRepository.update({}, { messageCount: 0 });
+  }
 }

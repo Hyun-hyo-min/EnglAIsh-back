@@ -9,14 +9,14 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column({ nullable: true })
-  password?: string;
-
   @Column()
   username: string;
 
+  @Column({ type: 'int', default: 0 })
+  messageCount: number;
+
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-  createdDt: Date;
+  createdAt: Date;
 
   @Column({ nullable: true })
   providerId?: string;

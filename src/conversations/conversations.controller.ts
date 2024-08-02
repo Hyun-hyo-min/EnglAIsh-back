@@ -41,7 +41,6 @@ export class ConversationsController {
         })
     }))
     async voiceConversation(@UploadedFile() file: Express.Multer.File, @GetUser() user: User) {
-        console.log(user)
         if (!file) {
             throw new BadRequestException('No audio file uploaded');
         }
