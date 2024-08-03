@@ -20,7 +20,7 @@ export class ConversationsService {
       throw new BadRequestException('Audio file path is undefined');
     }
 
-    if (user.messageCount >= 3) {
+    if (user.messageCount >= 30) {
       throw new BadRequestException('Daily message limit exceeded');
     }
 

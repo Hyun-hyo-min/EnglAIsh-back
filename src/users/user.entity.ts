@@ -3,8 +3,8 @@ import { Conversation } from 'src/conversations/conversation.entity';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ unique: true })
   email: string;
@@ -14,6 +14,9 @@ export class User {
 
   @Column({ type: 'int', default: 0 })
   messageCount: number;
+
+  @Column({ type: 'timestamp', nullable: true })
+  countResetAt: Date | null;
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

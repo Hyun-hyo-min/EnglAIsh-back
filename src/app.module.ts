@@ -5,6 +5,7 @@ import { ConversationsModule } from './conversations/conversations.module';
 import { FileStorageModule } from './common/file-storage.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
+import { ScheduleModule } from '@nestjs/schedule';
 
 require('dotenv').config();
 
@@ -23,6 +24,7 @@ require('dotenv').config();
     MulterModule.register({
       storage: memoryStorage(),
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     ConversationsModule,
     FileStorageModule,

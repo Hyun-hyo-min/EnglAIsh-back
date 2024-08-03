@@ -10,7 +10,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) { }
 
-  async getUserById(id: number): Promise<User> {
+  async getUserById(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
@@ -37,5 +37,10 @@ export class UsersService {
       }
       throw error;
     }
+  }
+
+  async getLastResetTime(id: string): Promise<Date | null> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    return user ? user.countResetAt : null;
   }
 }
