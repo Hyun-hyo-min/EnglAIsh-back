@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as natural from 'natural';
+import { GRAMMER_RULES } from './utils/nlp.constants';
+import { ADVANCED_WORDS } from './utils/nlp.constants';
 
 @Injectable()
 export class NlpService {
@@ -56,21 +58,31 @@ export class NlpService {
         return score;
     }
 
-    analyzeWordOrder(tags: string[]): number {
-        const validPatterns = [
-            ['DT', 'NN', 'VB'],
-            ['PRP', 'VB'],
-            ['NN', 'VB'],
-            ['DT', 'JJ', 'NN', 'VB'],
-        ];
+    calculateGrammarErrors(tags: string[]): number {
+        let errors = 0;
 
-        for (let i = 0; i < tags.length - 2; i++) {
-            const trigram = tags.slice(i, i + 3);
-            if (validPatterns.some(pattern => JSON.stringify(pattern) === JSON.stringify(trigram))) {
-                return 1;
+        GRAMMER_RULES.forEach(({ pattern, error }) => {
+            for (let i = 0; i < tags.length - pattern.length + 1; i++) {
+                const slice = tags.slice(i, i + pattern.length);
+                if (JSON.stringify(slice) === JSON.stringify(pattern)) {
+                    errors += error;
+                }
             }
-        }
+        });
 
-        return 0;
+        return errors;
+    }
+
+    evaluateVocabulary(text: string): number {
+        const words = this.tokenize(text);
+        const uniqueWords = new Set(words);
+        const basicVocabularyScore = Math.min(uniqueWords.size / words.length, 1);
+
+        const advancedWordSet = new Set(ADVANCED_WORDS.map(word => this.stemmer.stem(word)));
+        const stemmedWords = words.map(word => this.stemmer.stem(word));
+        const advancedWordCount = stemmedWords.filter(word => advancedWordSet.has(word)).length;
+        const advancedWordScore = Math.min(advancedWordCount / 2, 1);
+
+        return Math.round((basicVocabularyScore + advancedWordScore) * 50);
     }
 }

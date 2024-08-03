@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { Conversation } from 'src/conversations/conversation.entity';
 import { NlpService } from 'src/nlp/nlp.service';
 import { User } from 'src/users/user.entity';
-import { ADVANCED_WORDS, GRAMMER_RULES } from './utils/progress.constants';
 
 @Injectable()
 export class ProgressService {
@@ -38,9 +37,9 @@ export class ProgressService {
 
         for (const conversation of recentConversations) {
             const { conversationLevel, grammarLevel, vocabularyLevel } = await this.evaluateEnglishLevel(conversation);
-            totalConversationLevel += conversationLevel;
-            totalGrammarLevel += grammarLevel;
-            totalVocabularyLevel += vocabularyLevel;
+            totalConversationLevel += isNaN(conversationLevel) ? 0 : conversationLevel;
+            totalGrammarLevel += isNaN(grammarLevel) ? 0 : grammarLevel;
+            totalVocabularyLevel += isNaN(vocabularyLevel) ? 0 : vocabularyLevel;
         }
 
         user.conversationLevel = Math.round(totalConversationLevel / recentConversations.length);
@@ -50,7 +49,6 @@ export class ProgressService {
 
         return this.userRepository.save(user);
     }
-
 
     async evaluateEnglishLevel(conversation: Conversation): Promise<{
         conversationLevel: number;
@@ -64,28 +62,25 @@ export class ProgressService {
         const grammarLevel = this.evaluateGrammarLevel(userMessage);
         const vocabularyLevel = this.evaluateVocabularyLevel(userMessage);
 
-        return { conversationLevel, grammarLevel, vocabularyLevel };
+        return {
+            conversationLevel: isNaN(conversationLevel) ? 0 : conversationLevel,
+            grammarLevel: isNaN(grammarLevel) ? 0 : grammarLevel,
+            vocabularyLevel: isNaN(vocabularyLevel) ? 0 : vocabularyLevel,
+        };
     }
 
     evaluateConversationLevel(userMessage: string, aiMessage: string): number {
         const userWords = this.nlpService.tokenize(userMessage);
         const aiWords = this.nlpService.tokenize(aiMessage);
-
-        // 의미의 일치성
         const commonWords = userWords.filter(word => aiWords.includes(word));
         const relevanceScore = commonWords.length / userWords.length;
 
-        // 감정 분석
         const sentimentScore = this.nlpService.analyzeSentiment(userMessage);
-
-        // 응답의 길이
         const lengthScore = Math.min(userWords.length / 20, 1);
 
-        // 점수 계산
-        const score = (relevanceScore * 0.4 + sentimentScore * 0.4 + lengthScore * 0.2) * 100;
-        return Math.round(score);
+        const score = (relevanceScore + sentimentScore + lengthScore) * 1.67;
+        return Math.round(score * 20);
     }
-
 
     private evaluateGrammarLevel(userMessage: string): number {
         const sentences = this.nlpService.sentenceTokenize(userMessage);
@@ -95,55 +90,17 @@ export class ProgressService {
             const words = this.nlpService.tokenize(sentence);
             const tags = this.nlpService.posTag(words);
 
-            // 문장 구조 점수
+            const grammarErrors = this.nlpService.calculateGrammarErrors(tags);
             const structureScore = this.nlpService.analyzeSentenceStructure(tags);
-
-            // 단어 순서 점수
-            const orderScore = this.nlpService.analyzeWordOrder(tags);
-
-            // 문법 오류 감점
-            const grammarErrors = this.calculateGrammarErrors(tags);
-            const errorPenalty = Math.min(grammarErrors * 5, 100);
-
-            totalScore += (structureScore * 0.5 + orderScore * 0.5) * 100 - errorPenalty;
+            const grammarLevel = Math.max(0, 100 - (grammarErrors * 10) + (structureScore * 10));
+            totalScore += grammarLevel;
         });
 
-        const averageScore = totalScore / sentences.length;
-        return Math.round(averageScore); // 0-100 스케일로 변환
-    }
-
-    private calculateGrammarErrors(tags: string[]): number {
-        // 기본 문법 오류 수를 저장
-        let errorCount = 0;
-
-        const rules = GRAMMER_RULES;
-
-        for (let i = 0; i < tags.length - 1; i++) {
-            for (const rule of rules) {
-                const pattern = tags.slice(i, i + rule.pattern.length);
-                if (JSON.stringify(pattern) === JSON.stringify(rule.pattern)) {
-                    errorCount += rule.error;
-                }
-            }
-        }
-
-        return errorCount;
+        const averageScore = sentences.length ? Math.round(totalScore / sentences.length) : 0;
+        return averageScore;
     }
 
     private evaluateVocabularyLevel(userMessage: string): number {
-        const words = this.nlpService.tokenize(userMessage);
-        const uniqueWords = new Set(words);
-        const vocabularyScore = Math.min(uniqueWords.size / words.length, 1);
-
-        const advancedWords = ADVANCED_WORDS;
-        const stemmedAdvancedWords = advancedWords.map(word => this.nlpService.stemmer.stem(word));
-        const stemmedUserWords = words.map(word => this.nlpService.stemmer.stem(word));
-        const advancedWordCount = stemmedUserWords.filter(word => stemmedAdvancedWords.includes(word)).length;
-        const advancedWordScore = Math.min(advancedWordCount / 2, 1);
-
-        const score = (vocabularyScore * 0.6 + advancedWordScore * 0.4) * 100;
-        return Math.round(score);
+        return this.nlpService.evaluateVocabulary(userMessage);
     }
-
-
 }
