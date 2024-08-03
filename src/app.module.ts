@@ -2,10 +2,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ConversationsModule } from './conversations/conversations.module';
-import { FileStorageModule } from './common/file-storage.module';
+import { FileStorageModule } from './file-storage/file-storage.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { ScheduleModule } from '@nestjs/schedule';
+import { NlpModule } from './nlp/nlp.module';
+import { ProgressModule } from './progress/progress.module';
 
 require('dotenv').config();
 
@@ -28,6 +30,8 @@ require('dotenv').config();
     AuthModule,
     ConversationsModule,
     FileStorageModule,
+    NlpModule,
+    ProgressModule,
   ],
 })
 export class AppModule { }

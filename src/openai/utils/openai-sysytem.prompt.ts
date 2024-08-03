@@ -1,4 +1,4 @@
-export const openaiSystemPrompt: { role: 'system', content: string; } = {
+export const openAIConversationPrompt: { role: 'system', content: string; } = {
     role: "system",
     content: `
         You are a helpful facilitator for practicing English conversation.

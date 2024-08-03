@@ -4,9 +4,10 @@ import { ConversationsController } from './conversations.controller';
 import { ConversationsService } from './conversations.service';
 import { Conversation } from './conversation.entity';
 import { OpenAiModule } from '../openai/openai.module';
-import { FileStorageModule } from 'src/common/file-storage.module';
+import { FileStorageModule } from 'src/file-storage/file-storage.module';
 import { ConversationsScheduler } from 'src/conversations/conversation.scheduler';
 import { UsersModule } from 'src/users/users.module';
+import { ProgressModule } from 'src/progress/progress.module';
 
 @Module({
   imports: [
@@ -14,8 +15,9 @@ import { UsersModule } from 'src/users/users.module';
     OpenAiModule,
     FileStorageModule,
     UsersModule,
+    ProgressModule,
   ],
   controllers: [ConversationsController],
   providers: [ConversationsService, ConversationsScheduler],
 })
-export class ConversationsModule {}
+export class ConversationsModule { }

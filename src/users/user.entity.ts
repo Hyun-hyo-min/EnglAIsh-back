@@ -18,6 +18,18 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   countResetAt: Date | null;
 
+  @Column({ type: 'int', default: 1 })
+  conversationLevel: number;
+
+  @Column({ type: 'int', default: 1 })
+  grammarLevel: number;
+
+  @Column({ type: 'int', default: 1 })
+  vocabularyLevel: number;
+
+  @Column({ type: 'int', default: 0 })
+  totalConversations: number;
+
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 

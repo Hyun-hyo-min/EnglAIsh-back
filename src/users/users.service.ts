@@ -43,4 +43,22 @@ export class UsersService {
     const user = await this.usersRepository.findOne({ where: { id } });
     return user ? user.countResetAt : null;
   }
+
+  async getUserProgress(id: string): Promise<{
+    conversationLevel: number;
+    grammarLevel: number;
+    vocabularyLevel: number;
+    totalConversations: number;
+  }> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return {
+      conversationLevel: user.conversationLevel,
+      grammarLevel: user.grammarLevel,
+      vocabularyLevel: user.vocabularyLevel,
+      totalConversations: user.totalConversations,
+    };
+  }
 }

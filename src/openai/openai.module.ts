@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { OpenAiService } from './openai.service';
-import { FileStorageModule } from 'src/common/file-storage.module';
+import { FileStorageModule } from 'src/file-storage/file-storage.module';
 
 @Module({
   imports: [FileStorageModule],

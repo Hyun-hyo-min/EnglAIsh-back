@@ -8,9 +8,16 @@ import { JwtAuthGuard } from 'src/auth/auth.guard';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
+
   @Get()
   @UseGuards(JwtAuthGuard)
   getProfile(@Request() req) {
     return req.user;
+  }
+
+  @Get('progress')
+  @UseGuards(JwtAuthGuard)
+  async getUserProgress(@Request() req) {
+    return this.usersService.getUserProgress(req.user.id);
   }
 }

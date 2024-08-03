@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Conversation } from './conversation.entity';
 import { User } from '../users/user.entity';
 import { OpenAiService } from '../openai/openai.service';
+import { ProgressService } from 'src/progress/progress.service';
 
 @Injectable()
 export class ConversationsService {
@@ -13,6 +14,7 @@ export class ConversationsService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private openAiService: OpenAiService,
+    private progressService: ProgressService,
   ) { }
 
   async processVoiceConversation(audioFilePath: string, user: User): Promise<{ userText: string, aiText: string, audioUrl: string }> {
@@ -36,7 +38,7 @@ export class ConversationsService {
       await this.conversationsRepository.save(conversation);
 
       user.messageCount++;
-      await this.userRepository.save(user);
+      await this.progressService.updateUserEnglishLevel(user.id);
 
       return { userText, aiText, audioUrl };
     } catch (error) {
@@ -44,7 +46,6 @@ export class ConversationsService {
       throw new InternalServerErrorException('Failed to process voice conversation');
     }
   }
-
 
   async getConversation(id: string, user: User): Promise<Conversation> {
     const conversation = await this.conversationsRepository.findOne({
