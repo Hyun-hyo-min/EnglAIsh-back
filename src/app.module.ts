@@ -8,6 +8,8 @@ import { memoryStorage } from 'multer';
 import { ScheduleModule } from '@nestjs/schedule';
 import { NlpModule } from './nlp/nlp.module';
 import { ProgressModule } from './progress/progress.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 require('dotenv').config();
 
@@ -33,5 +35,7 @@ require('dotenv').config();
     NlpModule,
     ProgressModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule { }
