@@ -38,6 +38,7 @@ export class ConversationsService {
       await this.conversationsRepository.save(conversation);
 
       user.messageCount++;
+      await this.userRepository.save(user);
       await this.progressService.updateUserEnglishLevel(user.id);
 
       return { userText, aiText, audioUrl };
