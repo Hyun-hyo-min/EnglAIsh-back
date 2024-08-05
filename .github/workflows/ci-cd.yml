@@ -33,9 +33,12 @@ jobs:
     - name: Build project
       run: npm run build
 
-    - name: Deploy to EC2
+    - name: Decode and Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_KEY }}" ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+        echo "${{ secrets.EC2_KEY }}" | base64 -d > ec2_key.pem
+        chmod 600 ec2_key.pem
+
+        ssh -o StrictHostKeyChecking=no -i "ec2_key.pem" ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
           cd EnglAIsh-back/
           git pull origin main
           npm ci
