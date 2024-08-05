@@ -1,0 +1,47 @@
+name: EnglAIsh Backend CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.16.0'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run lint
+      run: npm run lint
+
+    - name: Run tests
+      run: npm test
+
+    - name: Build project
+      run: npm run build
+
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no -i "${{ secrets.EC2_KEY }}" ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+          cd EnglAIsh-back/
+          git pull origin main
+          npm ci
+          npm run build
+          pm2 restart all
+        EOF
+      env:
+        EC2_HOST: ${{ secrets.EC2_HOST }}
+        EC2_KEY: ${{ secrets.EC2_KEY }}
