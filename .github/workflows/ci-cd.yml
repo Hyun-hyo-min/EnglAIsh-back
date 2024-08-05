@@ -3,10 +3,10 @@ name: EnglAIsh Backend CI/CD Pipeline
 on:
   push:
     branches:
-      - ci-cd
+      - main
   pull_request:
     branches:
-      - ci-cd
+      - main
 
 jobs:
   build:
@@ -70,7 +70,7 @@ jobs:
           cd /home/ubuntu/EnglAIsh-back
 
           echo "Pulling latest code..."
-          git pull origin ci-cd
+          git pull origin main
 
           echo "Installing dependencies..."
           npm ci
