@@ -20,4 +20,4 @@ import { ProgressModule } from 'src/progress/progress.module';
   controllers: [ConversationsController],
   providers: [ConversationsService, ConversationsScheduler],
 })
-export class ConversationsModule { }
+export class ConversationsModule {}

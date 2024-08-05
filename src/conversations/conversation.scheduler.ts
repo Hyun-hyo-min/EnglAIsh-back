@@ -13,7 +13,7 @@ export class ConversationsScheduler implements OnModuleInit {
     private conversationsService: ConversationsService,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-  ) { }
+  ) {}
 
   @Cron('0 0 * * *')
   async handleDailyReset() {
@@ -27,18 +27,25 @@ export class ConversationsScheduler implements OnModuleInit {
       }
       this.logger.log('Daily reset of message counts completed successfully');
     } catch (error) {
-      this.logger.error('Error during daily reset of message counts', error.stack);
+      this.logger.error(
+        'Error during daily reset of message counts',
+        error.stack,
+      );
     }
   }
 
   async onModuleInit() {
-    this.logger.log('Checking if daily reset is needed on module initialization');
+    this.logger.log(
+      'Checking if daily reset is needed on module initialization',
+    );
     const users = await this.usersRepository.find();
     const now = new Date();
     for (const user of users) {
       const lastReset = user.countResetAt;
       if (lastReset && this.isDifferentDay(lastReset, now)) {
-        this.logger.log(`User ${user.id} needs daily reset. Last reset was on ${lastReset}`);
+        this.logger.log(
+          `User ${user.id} needs daily reset. Last reset was on ${lastReset}`,
+        );
         await this.handleDailyReset();
         break;
       }

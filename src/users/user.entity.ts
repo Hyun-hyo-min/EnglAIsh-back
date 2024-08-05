@@ -36,6 +36,6 @@ export class User {
   @Column({ nullable: true })
   providerId?: string;
 
-  @OneToMany(() => Conversation, conversation => conversation.user)
+  @OneToMany(() => Conversation, (conversation) => conversation.user)
   conversations: Conversation[];
 }

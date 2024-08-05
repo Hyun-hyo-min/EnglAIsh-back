@@ -1,13 +1,13 @@
-import { Injectable } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
+import { Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
 export class GoogleAuthGuard extends AuthGuard('google') {
-    async canActivate(context: any): Promise<boolean> {
-        const result = (await super.canActivate(context)) as boolean;
-        return result;
-    }
+  async canActivate(context: any): Promise<boolean> {
+    const result = (await super.canActivate(context)) as boolean;
+    return result;
+  }
 }
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') { }
+export class JwtAuthGuard extends AuthGuard('jwt') {}

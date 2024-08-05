@@ -6,12 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Conversation } from 'src/conversations/conversation.entity';
 
 @Module({
-  imports: [
-    NlpModule,
-    UsersModule,
-    TypeOrmModule.forFeature([Conversation]), 
-  ],
+  imports: [NlpModule, UsersModule, TypeOrmModule.forFeature([Conversation])],
   exports: [ProgressService],
-  providers: [ProgressService]
+  providers: [ProgressService],
 })
 export class ProgressModule {}

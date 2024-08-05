@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Conversation } from './conversation.entity';
@@ -15,9 +20,12 @@ export class ConversationsService {
     private userRepository: Repository<User>,
     private openAiService: OpenAiService,
     private progressService: ProgressService,
-  ) { }
+  ) {}
 
-  async processVoiceConversation(audioFilePath: string, user: User): Promise<{ userText: string, aiText: string, audioUrl: string }> {
+  async processVoiceConversation(
+    audioFilePath: string,
+    user: User,
+  ): Promise<{ userText: string; aiText: string; audioUrl: string }> {
     if (!audioFilePath) {
       throw new BadRequestException('Audio file path is undefined');
     }
@@ -27,7 +35,8 @@ export class ConversationsService {
     }
 
     try {
-      const { userText, aiText, audioUrl } = await this.openAiService.processVoiceConversation(audioFilePath);
+      const { userText, aiText, audioUrl } =
+        await this.openAiService.processVoiceConversation(audioFilePath);
 
       const conversation = new Conversation();
       conversation.title = 'Voice Conversation';
@@ -44,7 +53,9 @@ export class ConversationsService {
       return { userText, aiText, audioUrl };
     } catch (error) {
       console.error('Error processing voice conversation:', error);
-      throw new InternalServerErrorException('Failed to process voice conversation');
+      throw new InternalServerErrorException(
+        'Failed to process voice conversation',
+      );
     }
   }
 

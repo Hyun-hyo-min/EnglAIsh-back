@@ -7,4 +7,4 @@ import { FileStorageModule } from 'src/file-storage/file-storage.module';
   providers: [OpenAiService],
   exports: [OpenAiService],
 })
-export class OpenAiModule { }
+export class OpenAiModule {}

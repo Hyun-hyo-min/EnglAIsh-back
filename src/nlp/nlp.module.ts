@@ -5,6 +5,6 @@ import { NlpService } from './nlp.service';
   imports: [],
   exports: [NlpService],
   controllers: [],
-  providers: [NlpService]
+  providers: [NlpService],
 })
 export class NlpModule {}

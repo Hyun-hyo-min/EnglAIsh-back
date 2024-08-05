@@ -1,5 +1,18 @@
-import { Controller, Post, UseInterceptors, UploadedFile, BadRequestException, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiTags, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiTags,
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
+} from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ConversationsService } from './conversations.service';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
@@ -13,48 +26,52 @@ import { JwtAuthGuard } from 'src/auth/auth.guard';
 @ApiTags('conversations')
 @Controller('conversations')
 export class ConversationsController {
-    constructor(
-        private readonly conversationsService: ConversationsService,
-    ) { }
+  constructor(private readonly conversationsService: ConversationsService) {}
 
-    @ApiOperation({ summary: 'Process voice conversation' })
-    @ApiConsumes('multipart/form-data')
-    @ApiBody({
-        schema: {
-            type: 'object',
-            properties: {
-                audio: {
-                    type: 'string',
-                    format: 'binary',
-                },
-            },
+  @ApiOperation({ summary: 'Process voice conversation' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        audio: {
+          type: 'string',
+          format: 'binary',
         },
-    })
-    @Post('voice-conversation')
-    @UseGuards(JwtAuthGuard)
-    @UseInterceptors(FileInterceptor('audio', {
-        storage: diskStorage({
-            destination: './temp',
-            filename: (req, file, callback) => {
-                callback(null, extname(file.originalname));
-            }
-        })
-    }))
-    async voiceConversation(@UploadedFile() file: Express.Multer.File, @GetUser() user: User) {
-        if (!file) {
-            throw new BadRequestException('No audio file uploaded');
-        }
-
-        try {
-            const result = await this.conversationsService.processVoiceConversation(file.path, user);
-            await deleteFile(file.path);
-
-            return result;
-        }
-
-        catch (error) {
-            await deleteFile(file.path);
-            throw error;
-        }
+      },
+    },
+  })
+  @Post('voice-conversation')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('audio', {
+      storage: diskStorage({
+        destination: './temp',
+        filename: (req, file, callback) => {
+          callback(null, extname(file.originalname));
+        },
+      }),
+    }),
+  )
+  async voiceConversation(
+    @UploadedFile() file: Express.Multer.File,
+    @GetUser() user: User,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No audio file uploaded');
     }
+
+    try {
+      const result = await this.conversationsService.processVoiceConversation(
+        file.path,
+        user,
+      );
+      await deleteFile(file.path);
+
+      return result;
+    } catch (error) {
+      await deleteFile(file.path);
+      throw error;
+    }
+  }
 }

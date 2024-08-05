@@ -7,8 +7,8 @@ import { User } from '../users/user.entity';
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService
-  ) { }
+    private jwtService: JwtService,
+  ) {}
 
   async validateUser(email: string): Promise<User> {
     return this.usersService.getUserByEmail(email);

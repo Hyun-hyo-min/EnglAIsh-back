@@ -11,8 +11,6 @@ import { ProgressModule } from './progress/progress.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-require('dotenv').config();
-
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -38,4 +36,4 @@ require('dotenv').config();
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

@@ -8,7 +8,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-  ) { }
+  ) {}
 
   async getUserById(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
@@ -26,13 +26,21 @@ export class UsersService {
     return user;
   }
 
-  async findByEmailOrSave(email: string, username: string, providerId: string): Promise<User> {
+  async findByEmailOrSave(
+    email: string,
+    username: string,
+    providerId: string,
+  ): Promise<User> {
     try {
       const foundUser = await this.getUserByEmail(email);
       return foundUser;
     } catch (error) {
       if (error instanceof NotFoundException) {
-        const newUser = this.usersRepository.create({ email, username, providerId });
+        const newUser = this.usersRepository.create({
+          email,
+          username,
+          providerId,
+        });
         return this.usersRepository.save(newUser);
       }
       throw error;
