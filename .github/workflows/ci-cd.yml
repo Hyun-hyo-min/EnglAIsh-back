@@ -3,15 +3,14 @@ name: EnglAIsh Backend CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - ci-cd
   pull_request:
     branches:
-      - main
+      - ci-cd
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20  # 20분 후 작업 중단
 
     steps:
     - name: Check out code
@@ -20,7 +19,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '20.x'  # 20.x로 변경하여 최신 버전 사용
+        node-version: '20.x'
 
     - name: Install dependencies
       run: npm ci
@@ -71,7 +70,7 @@ jobs:
           cd /home/ubuntu/EnglAIsh-back
 
           echo "Pulling latest code..."
-          git pull origin main
+          git pull origin ci-cd
 
           echo "Installing dependencies..."
           npm ci
