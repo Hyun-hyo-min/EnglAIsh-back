@@ -3,14 +3,15 @@ name: EnglAIsh Backend CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - dev
   pull_request:
     branches:
-      - main
+      - dev
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # 20분 후 작업 중단
 
     steps:
     - name: Check out code
@@ -19,7 +20,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '20.16.0'
+        node-version: '20.x'  # 20.x로 변경하여 최신 버전 사용
 
     - name: Install dependencies
       run: npm ci
@@ -33,18 +34,61 @@ jobs:
     - name: Build project
       run: npm run build
 
-    - name: Decode and Deploy to EC2
-      run: |
-        echo "${{ secrets.EC2_KEY }}" | base64 -d > ec2_key.pem
-        chmod 600 ec2_key.pem
-
-        ssh -o StrictHostKeyChecking=no -i "ec2_key.pem" ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          cd EnglAIsh-back/
-          git pull origin main
-          npm ci
-          npm run build
-          pm2 restart all
-        EOF
+    - name: Deploy to EC2
       env:
         EC2_HOST: ${{ secrets.EC2_HOST }}
+        EC2_USER: ${{ secrets.EC2_USER }}
         EC2_KEY: ${{ secrets.EC2_KEY }}
+      run: |
+        echo "$EC2_KEY" > $HOME/key.pem
+        chmod 400 $HOME/key.pem
+        ssh -i $HOME/key.pem -o StrictHostKeyChecking=no -o ServerAliveInterval=60 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
+          set -ex
+
+          echo "Starting deployment process..."
+
+          echo "Checking Node.js and npm versions..."
+          if ! node -v; then
+            echo "Node.js is not installed. Installing..."
+            sudo apt update
+            sudo apt install -y nodejs npm
+          fi
+          if ! npm -v; then
+            echo "npm is not installed. Installing..."
+            sudo apt install -y npm
+          fi
+
+          echo "Installing PM2 if not already installed..."
+          if ! pm2 -v; then
+            sudo npm install -g pm2
+          fi
+
+          echo "Setting permissions..."
+          sudo chown -R ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} /home/ubuntu/EnglAIsh-back
+          sudo chmod -R u+rwX /home/ubuntu/EnglAIsh-back
+
+          echo "Navigating to project directory..."
+          cd /home/ubuntu/EnglAIsh-back
+
+          echo "Pulling latest code..."
+          git pull origin dev
+
+          echo "Installing dependencies..."
+          npm ci
+
+          echo "Building project..."
+          npm run build
+
+          echo "Setting environment variables..."
+          # Add any necessary environment variables here
+          # export MY_ENV_VAR=value
+
+          echo "Restarting application..."
+          if pm2 describe engl-aish-back > /dev/null; then
+            pm2 restart engl-aish-back
+          else
+            pm2 start npm --name "engl-aish-back" -- run start:prod
+          fi
+
+          echo "Deployment completed successfully"
+        ENDSSH
